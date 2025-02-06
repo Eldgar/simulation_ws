@@ -1,0 +1,4 @@
+<launch>
+  <!-- Run the Test Script -->
+  <test test-name="waypoints_test" pkg="tortoisebot_waypoints" type="waypoints_test.py" />
+</launch>

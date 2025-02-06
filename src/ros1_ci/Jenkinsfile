@@ -1,0 +1,27 @@
+pipeline {
+    agent {
+        docker {
+            image 'tortoisebot_ros1' // Uses the Dockerfile you already created
+        }
+    }
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t tortoisebot_ros1 .'
+            }
+        }
+        stage('Run Simulation Tests') {
+            steps {
+                sh 'docker run --rm tortoisebot_ros1 roslaunch tortoisebot_gazebo tortoisebot_world.launch'
+            }
+        }
+        stage('Run Waypoints Tests') {
+            steps {
+                sh 'docker run --rm tortoisebot_ros1 roslaunch tortoisebot_waypoints waypoints_test.launch'
+            }
+        }
+    }
+    triggers {
+        pollSCM('H/5 * * * *') // Polls GitHub every 5 minutes
+    }
+}

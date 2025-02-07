@@ -1,27 +1,61 @@
 pipeline {
-    agent {
-        docker {
-            image 'tortoisebot_ros1' // Uses the Dockerfile you already created
-        }
-    }
+    agent any  // Use any available agent
+
     stages {
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t tortoisebot_ros1 .'
+                sh 'docker build -t tortoisebot_ros1 ../'  // Go one directory up to find Dockerfile
             }
         }
-        stage('Run Simulation Tests') {
+
+        stage('Run Gazebo Simulation') {
             steps {
-                sh 'docker run --rm tortoisebot_ros1 roslaunch tortoisebot_gazebo tortoisebot_world.launch'
+                sh '''
+                docker run -it --rm \
+                    -e DISPLAY=:2 \
+                    -e QT_X11_NO_MITSHM=1 \
+                    -v /tmp/.X11-unix:/tmp/.X11-unix \
+                    tortoisebot_ros1 \
+                    /bin/bash -c "source /opt/ros/noetic/setup.bash && \
+                                  source ~/simulation_ws/devel/setup.bash && \
+                                  roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
+                '''
             }
         }
-        stage('Run Waypoints Tests') {
+
+        stage('Run Action Server') {
             steps {
-                sh 'docker run --rm tortoisebot_ros1 roslaunch tortoisebot_waypoints waypoints_test.launch'
+                sh '''
+                docker run -it --rm \
+                    -e DISPLAY=:2 \
+                    -e QT_X11_NO_MITSHM=1 \
+                    -v /tmp/.X11-unix:/tmp/.X11-unix \
+                    tortoisebot_ros1 \
+                    /bin/bash -c "source /opt/ros/noetic/setup.bash && \
+                                  cd ~/simulation_ws && catkin_make && source devel/setup.bash && \
+                                  rosrun course_web_dev_ros tortoisebot_action_server.py"
+                '''
+            }
+        }
+
+        stage('Run Waypoints Test') {
+            steps {
+                sh '''
+                docker run -it --rm \
+                    -e DISPLAY=:2 \
+                    -e QT_X11_NO_MITSHM=1 \
+                    -v /tmp/.X11-unix:/tmp/.X11-unix \
+                    tortoisebot_ros1 \
+                    /bin/bash -c "source /opt/ros/noetic/setup.bash && \
+                                  cd ~/simulation_ws && catkin_make && source devel/setup.bash && \
+                                  rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
+                '''
             }
         }
     }
+
     triggers {
-        pollSCM('H/5 * * * *') // Polls GitHub every 5 minutes
+        pollSCM('H/4 * * * *')  // Poll GitHub for changes every 2 minutes
     }
 }
+

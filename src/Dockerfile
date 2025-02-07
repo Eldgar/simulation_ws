@@ -4,7 +4,9 @@ FROM osrf/ros:noetic-desktop-full
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
     ROS_DISTRO=noetic \
-    CATKIN_WS=/home/user/simulation_ws
+    CATKIN_WS=/home/user/simulation_ws \
+    DISPLAY=:2 \
+    QT_X11_NO_MITSHM=1
 
 # Install necessary dependencies
 RUN apt-get update && apt-get install -y \
@@ -33,8 +35,9 @@ WORKDIR ${CATKIN_WS}
 RUN rosdep install --from-paths src --ignore-src -r -y
 
 # Build the workspace
-RUN . /opt/ros/noetic/setup.sh && catkin_make
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && catkin_make"
 
 # Set up entrypoint
 RUN echo "source ${CATKIN_WS}/devel/setup.bash" >> /root/.bashrc
 ENTRYPOINT ["/bin/bash", "-c", "source /root/.bashrc && bash"]
+

@@ -12,8 +12,9 @@ pipeline {
         stage('Run Gazebo Simulation') {
             steps {
                 sh '''
+                echo $DISPLAY
                 sudo docker run --rm\
-                    -e DISPLAY=:2 \
+                    -e DISPLAY=$DISPLAY \
                     -e QT_X11_NO_MITSHM=1 \
                     -v /tmp/.X11-unix:/tmp/.X11-unix \
                     --name gazebo_container \

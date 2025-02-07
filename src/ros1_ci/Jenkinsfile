@@ -4,24 +4,29 @@ pipeline {
     stages {
         stage('Build Docker Image') {
             steps {
-                sh 'sudo docker build -t tortoisebot_ros1 $WORKSPACE/src/'  // Correct path to Dockerfile
+                sh '''
+                cd $WORKSPACE/src/
+                sudo docker build -t tortoisebot_ros1 .
+                '''
             }
         }
-
 
         stage('Run Gazebo Simulation') {
             steps {
                 sh '''
-                echo $DISPLAY
-                sudo docker run \
+                # Launch the Gazebo container in detached mode with host networking.
+                sudo docker run -d --net=host \
                     -e DISPLAY=$DISPLAY \
                     -e QT_X11_NO_MITSHM=1 \
                     -v /tmp/.X11-unix:/tmp/.X11-unix \
                     --name gazebo_container \
                     tortoisebot_ros1 \
                     /bin/bash -c "source /opt/ros/noetic/setup.bash && \
-                                source /devel/setup.bash && \
-                                roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
+                                  source ~/simulation_ws/devel/setup.bash && \
+                                  roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
+                                  
+                # Wait for 3 minutes to allow Gazebo to load
+                sleep 180
                 '''
             }
         }
@@ -55,5 +60,6 @@ pipeline {
         pollSCM('H/4 * * * *')  // Poll GitHub for changes every 4 minutes
     }
 }
+
 
 

@@ -13,7 +13,7 @@ pipeline {
             steps {
                 sh '''
                 echo $DISPLAY
-                sudo docker run --rm\
+                sudo docker run \
                     -e DISPLAY=$DISPLAY \
                     -e QT_X11_NO_MITSHM=1 \
                     -v /tmp/.X11-unix:/tmp/.X11-unix \

@@ -15,7 +15,7 @@ pipeline {
             steps {
                 sh '''
                 # Start the container without launching Gazebo
-                sudo docker run \
+                sudo docker run -d \
                     -e DISPLAY=:2 \
                     -e QT_X11_NO_MITSHM=1 \
                     -v /tmp/.X11-unix:/tmp/.X11-unix \

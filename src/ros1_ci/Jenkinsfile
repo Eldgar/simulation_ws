@@ -12,14 +12,14 @@ pipeline {
         stage('Run Gazebo Simulation') {
             steps {
                 sh '''
-                sudo docker run -d --net=host \
-                    -e DISPLAY=$DISPLAY \
+                sudo docker run --rm\
+                    -e DISPLAY=:2 \
                     -e QT_X11_NO_MITSHM=1 \
                     -v /tmp/.X11-unix:/tmp/.X11-unix \
                     --name gazebo_container \
                     tortoisebot_ros1 \
                     /bin/bash -c "source /opt/ros/noetic/setup.bash && \
-                                source ~/simulation_ws/devel/setup.bash && \
+                                source /devel/setup.bash && \
                                 roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
                 '''
             }

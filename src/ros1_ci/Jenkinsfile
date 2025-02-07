@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t tortoisebot_ros1 $WORKSPACE/src/'  // Correct path to Dockerfile
+                sh 'docker build -t tortoisebot_ros1 $WORKSPACE/ros1_ci_pipeline/src/'  // Correct path to Dockerfile
             }
         }
 

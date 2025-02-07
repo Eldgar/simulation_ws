@@ -15,7 +15,7 @@ pipeline {
             steps {
                 sh '''
                 # Launch the Gazebo container in detached mode with host networking.
-                sudo docker run -d --net=host \
+                sudo docker run -rm --net=host \
                     -e DISPLAY=$DISPLAY \
                     -e QT_X11_NO_MITSHM=1 \
                     -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -26,7 +26,7 @@ pipeline {
                                   roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
                                   
                 # Wait for 3 minutes to allow Gazebo to load
-                sleep 180
+                sleep 240
                 '''
             }
         }

@@ -35,7 +35,7 @@ pipeline {
                 # - Waits 10 seconds to let Gazebo initialize.
                 # - Launches the waypoints action server via rosrun.
                 # - Sleeps 300 seconds to allow time for the test to run.
-                sudo docker run -d --net=host \
+                sudo docker run -d \
                     --name simulation_container \
                     tortoisebot_ros1 \
                     bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
@@ -51,7 +51,7 @@ pipeline {
                 sh '''
                 # Run the test in a new container.
                 # --net=host allows the test container to connect to the same ROS master.
-                sudo docker run --rm --net=host tortoisebot_ros1 \
+                sudo docker run --rm tortoisebot_ros1 \
                     bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
                               rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
 

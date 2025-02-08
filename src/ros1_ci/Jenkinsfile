@@ -19,10 +19,10 @@ pipeline {
                 '''
             }
         }
-        stage('Launch Simulation and Action Server in Docker') {
+        stage('Launch Gazebo & Action Server in Docker') {
             steps {
                 sh '''
-                # Remove any existing container named "simulation_container"
+                # Stop and remove any existing containers
                 if [ "$(sudo docker ps -aq -f name=simulation_container)" ]; then
                     echo "Stopping and removing existing simulation_container..."
                     sudo docker stop simulation_container || true
@@ -30,13 +30,18 @@ pipeline {
                 fi
 
                 echo "Launching Gazebo and Action Server..."
-                # Run everything in foreground to capture logs in Jenkins Console Output
-                sudo docker run --rm \
-                    --name simulation_container \
+
+                sudo docker run --rm --name simulation_container \
+                    --network bridge \
                     tortoisebot_ros1 \
-                    bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
-                             roslaunch tortoisebot_gazebo tortoisebot_playground.launch & sleep 10 && \
-                             rosrun tortoisebot_waypoints tortoisebot_action_server.py"
+                    bash -c "
+                        source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
+                        echo 'Starting Gazebo...' && \
+                        roslaunch tortoisebot_gazebo tortoisebot_playground.launch & \
+                        sleep 10 && \
+                        echo 'Gazebo launched, starting Action Server...' && \
+                        rosrun tortoisebot_waypoints tortoisebot_action_server.py
+                    "
                 '''
             }
         }
@@ -44,10 +49,14 @@ pipeline {
             steps {
                 sh '''
                 echo "Running waypoints test..."
-                sudo docker run --rm \
+                
+                sudo docker run --rm --network bridge \
                     tortoisebot_ros1 \
-                    bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
-                             rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
+                    bash -c "
+                        source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
+                        rostest tortoisebot_waypoints waypoints_test.test --reuse-master
+                    "
+                
                 echo "Waypoints test completed."
                 '''
             }
@@ -58,6 +67,7 @@ pipeline {
         pollSCM('H/3 * * * *')
     }
 }
+
 
 
 

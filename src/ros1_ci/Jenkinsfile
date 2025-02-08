@@ -5,11 +5,11 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 sh '''
-                # Source ROS Noetic and workspace
+                # Source ROS 1 Noetic and workspace
                 source /opt/ros/noetic/setup.bash
                 source ~/simulation_ws/devel/setup.bash
                 
-                echo "ROS environment set up."
+                echo "ROS 1 environment set up."
                 '''
             }
         }
@@ -19,6 +19,7 @@ pipeline {
                 sh '''
                 source /opt/ros/noetic/setup.bash
                 source ~/simulation_ws/devel/setup.bash
+
                 cd ~/simulation_ws
                 '''
             }
@@ -27,10 +28,17 @@ pipeline {
         stage('Launch Gazebo') {
             steps {
                 sh '''
-                # Start Gazebo in a screen session so it runs in the background
-                roslaunch tortoisebot_gazebo tortoisebot_world.launch
+                source /opt/ros/noetic/setup.bash
+                source ~/simulation_ws/devel/setup.bash
+
+                # Start Gazebo in the background
+                roslaunch tortoisebot_gazebo tortoisebot_world.launch & 
+                GAZEBO_PID=$!
+                
+                # Wait for Gazebo to fully start
                 sleep 10
-                echo "Gazebo started."
+                
+                echo "Gazebo started with PID $GAZEBO_PID."
                 '''
             }
         }
@@ -38,6 +46,9 @@ pipeline {
         stage('Run Waypoints Action Server Tests') {
             steps {
                 sh '''
+                source /opt/ros/noetic/setup.bash
+                source ~/simulation_ws/devel/setup.bash
+
                 roslaunch tortoisebot_waypoints waypoints_test.launch
                 '''
             }
@@ -46,6 +57,9 @@ pipeline {
         stage('Check Simulation Status') {
             steps {
                 sh '''
+                source /opt/ros/noetic/setup.bash
+                source ~/simulation_ws/devel/setup.bash
+
                 # Check if Gazebo is running
                 if pgrep -x "gzserver" > /dev/null; then
                     echo "Gazebo is running."
@@ -60,6 +74,9 @@ pipeline {
         stage('Cleanup') {
             steps {
                 sh '''
+                source /opt/ros/noetic/setup.bash
+                source ~/simulation_ws/devel/setup.bash
+
                 # Kill Gazebo processes after the test
                 pkill -f gzserver || true
                 pkill -f gzclient || true
@@ -73,8 +90,3 @@ pipeline {
         pollSCM('H/4 * * * *')  // Poll GitHub for changes every 4 minutes
     }
 }
-
-
-
-
-

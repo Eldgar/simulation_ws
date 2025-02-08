@@ -15,8 +15,6 @@ pipeline {
         stage('Launch Gazebo in Docker') {
             steps {
                 sh '''
-                # Allow local root connections to X server (if not already set)
-                xhost +local:root
 
                 # Check if the container already exists
                 if [ "$(docker ps -aq -f name=gazebo_container)" ]; then

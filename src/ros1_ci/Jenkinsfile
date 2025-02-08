@@ -1,39 +1,49 @@
 pipeline {
     agent any
     environment {
-        DISPLAY = ":2"  // Set display for all steps if needed
+        DISPLAY = ":2"
     }
     stages {
         stage('Build Docker Image') {
             steps {
                 sh '''
                 cd $WORKSPACE/src/
-                sudo docker build -t tortoisebot_ros1 .
+                docker build -t tortoisebot_ros1 .
                 '''
             }
         }
         stage('Launch Gazebo in Docker') {
             steps {
                 sh '''
+                # Allow local root connections to X server (if not already set)
+                xhost +local:root
+
+                # Check if the container already exists
+                if [ "$(docker ps -aq -f name=gazebo_container)" ]; then
+                    echo "Stopping and removing existing gazebo_container..."
+                    docker stop gazebo_container || true
+                    docker rm gazebo_container || true
+                fi
+
                 # Run the Docker container with X11 forwarding
-                sudo docker run -d \
+                docker run -d \
                   -e DISPLAY=:2 \
                   -v /tmp/.X11-unix:/tmp/.X11-unix \
                   -v $HOME/.Xauthority:/root/.Xauthority \
                   --name gazebo_container \
                   tortoisebot_ros1 \
                   bash -c "source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
-                  
+
                 echo "Gazebo container started."
                 '''
             }
         }
-        // Additional stages (e.g., tests, cleanup) can follow
         stage('Cleanup') {
             steps {
                 sh '''
-                sudo docker stop gazebo_container || true
-                sudo docker rm gazebo_container || true
+                echo "Stopping and removing gazebo_container..."
+                docker stop gazebo_container || true
+                docker rm gazebo_container || true
                 echo "Docker container cleaned up."
                 '''
             }
@@ -43,3 +53,4 @@ pipeline {
         pollSCM('H/4 * * * *')
     }
 }
+

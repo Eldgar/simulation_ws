@@ -16,7 +16,7 @@ pipeline {
             steps {
                 sh '''
                 # Check if the container already exists
-                if [ "$(docker ps -aq -f name=gazebo_container)" ]; then
+                if [ "$(sudo docker ps -aq -f name=gazebo_container)" ]; then
                     echo "Stopping and removing existing gazebo_container..."
                     sudo docker stop gazebo_container || true
                     sudo docker rm gazebo_container || true
@@ -34,7 +34,14 @@ pipeline {
                 echo "Gazebo container started."
                 # Wait long enough for you to connect and see the GUI
                 export DISPLAY=:2
-                sleep 300
+                sleep 200
+                '''
+            }
+        }
+        stage('Check Container Logs') {
+            steps {
+                sh '''
+                sudo docker logs gazebo_container
                 '''
             }
         }

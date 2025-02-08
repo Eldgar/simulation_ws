@@ -26,7 +26,7 @@ pipeline {
             steps {
                 sh '''
                 # Start Gazebo in a screen session so it runs in the background
-                screen -dmS gazebo_session roslaunch tortoisebot_gazebo tortoisebot_world.launch
+                roslaunch tortoisebot_gazebo tortoisebot_world.launch
                 sleep 10
                 echo "Gazebo started."
                 '''

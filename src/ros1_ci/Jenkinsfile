@@ -9,34 +9,41 @@ pipeline {
                 '''
             }
         }
-        stage('Launch Waypoints Action Server in Docker') {
+        stage('Launch Simulation and Action Server in Docker') {
             steps {
                 sh '''
-                # If a container named "waypoints_container" already exists, stop and remove it.
-                if [ "$(sudo docker ps -aq -f name=waypoints_container)" ]; then
-                    echo "Stopping and removing existing waypoints_container..."
-                    sudo docker stop waypoints_container || true
-                    sudo docker rm waypoints_container || true
+                # If a container named "simulation_container" already exists, stop and remove it.
+                if [ "$(sudo docker ps -aq -f name=simulation_container)" ]; then
+                    echo "Stopping and removing existing simulation_container..."
+                    sudo docker stop simulation_container || true
+                    sudo docker rm simulation_container || true
                 fi
 
-                # Launch the waypoints action server in detached mode (headless)
-                sudo docker run -d \
-                    --name waypoints_container \
+                # Launch a container that starts Gazebo (using your launch file) and then the waypoints action server.
+                # - The command first sources the ROS environment.
+                # - It launches the Gazebo simulation in the background (&).
+                # - It waits 10 seconds for Gazebo to initialize.
+                # - Then it starts the waypoints action server.
+                # - Finally, it sleeps 300 seconds so that the simulation remains running while the tests run.
+                sudo docker run -d --net=host \
+                    --name simulation_container \
                     tortoisebot_ros1 \
-                    bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && rosrun tortoisebot_waypoints tortoisebot_action_server.py"
+                    bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
+                              roslaunch tortoisebot_gazebo tortoisebot_playground.launch & sleep 10 && \
+                              rosrun tortoisebot_waypoints tortoisebot_action_server.py && sleep 300"
 
-                echo "Waypoints action server container started."
-                # Allow time for the action server (and ROS master) to initialize.
-                sleep 30
+                echo "Simulation and Action Server launched."
                 '''
             }
         }
         stage('Run Waypoints Test in Docker') {
             steps {
                 sh '''
-                # Run the test in a new container. Using --net=host allows the test container to connect to the same ROS master.
+                # Run the test in a new container.
+                # --net=host ensures it connects to the same ROS master (started by the simulation container).
                 sudo docker run --rm --net=host tortoisebot_ros1 \
-                    bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
+                    bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
+                              rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
 
                 echo "Waypoints test completed."
                 '''
@@ -45,18 +52,20 @@ pipeline {
         stage('Cleanup') {
             steps {
                 sh '''
-                echo "Stopping and removing waypoints_container..."
-                sudo docker stop waypoints_container || true
-                sudo docker rm waypoints_container || true
+                echo "Stopping and removing simulation_container..."
+                sudo docker stop simulation_container || true
+                sudo docker rm simulation_container || true
                 echo "Cleanup complete."
                 '''
             }
         }
     }
     triggers {
+        // Poll the repository every 3 minutes.
         pollSCM('H/3 * * * *')
     }
 }
+
 
 
 

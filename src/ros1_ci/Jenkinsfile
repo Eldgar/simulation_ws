@@ -29,43 +29,26 @@ pipeline {
                     sudo docker rm simulation_container || true
                 fi
 
-                # Launch a container that starts Gazebo and the waypoints action server.
-                # - Sources ROS and workspace environment.
-                # - Launches the Gazebo simulation via your launch file (running in the background with &).
-                # - Waits 10 seconds to let Gazebo initialize.
-                # - Launches the waypoints action server via rosrun.
-                # - Sleeps 300 seconds to allow time for the test to run.
-                sudo docker run -d \
+                echo "Launching Gazebo and Action Server..."
+                # Run everything in foreground to capture logs in Jenkins Console Output
+                sudo docker run --rm \
                     --name simulation_container \
                     tortoisebot_ros1 \
                     bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
-                              roslaunch tortoisebot_gazebo tortoisebot_playground.launch & sleep 10 && \
-                              rosrun tortoisebot_waypoints tortoisebot_action_server.py && sleep 300"
-
-                echo "Simulation and Action Server launched."
+                             roslaunch tortoisebot_gazebo tortoisebot_playground.launch & sleep 10 && \
+                             rosrun tortoisebot_waypoints tortoisebot_action_server.py"
                 '''
             }
         }
         stage('Run Waypoints Test in Docker') {
             steps {
                 sh '''
-                # Run the test in a new container.
-                # --net=host allows the test container to connect to the same ROS master.
-                sudo docker run --rm tortoisebot_ros1 \
+                echo "Running waypoints test..."
+                sudo docker run --rm \
+                    tortoisebot_ros1 \
                     bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && \
-                              rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
-
-                echo "Waypoints test executed."
-                '''
-            }
-        }
-        stage('Cleanup') {
-            steps {
-                sh '''
-                echo "Stopping and removing simulation_container..."
-                sudo docker stop simulation_container || true
-                sudo docker rm simulation_container || true
-                echo "Cleanup complete."
+                             rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
+                echo "Waypoints test completed."
                 '''
             }
         }
@@ -75,6 +58,7 @@ pipeline {
         pollSCM('H/3 * * * *')
     }
 }
+
 
 
 

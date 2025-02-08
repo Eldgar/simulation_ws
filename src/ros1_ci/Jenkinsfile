@@ -36,7 +36,7 @@ pipeline {
                 GAZEBO_PID=$!
                 
                 # Wait for Gazebo to fully start
-                sleep 10
+                sleep 400
                 
                 echo "Gazebo started with PID $GAZEBO_PID."
                 '''

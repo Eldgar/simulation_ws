@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DISPLAY = ":2"
+        DISPLAY = "${env.DISPLAY}" // Inherit the DISPLAY
     }
     stages {
         stage('Build Docker Image') {
@@ -15,26 +15,20 @@ pipeline {
         stage('Launch Gazebo in Docker') {
             steps {
                 sh '''
-                # Check if the container already exists
                 if [ "$(sudo docker ps -aq -f name=gazebo_container)" ]; then
-                    echo "Stopping and removing existing gazebo_container..."
                     sudo docker stop gazebo_container || true
                     sudo docker rm gazebo_container || true
                 fi
 
-                # Run the Docker container with X11 forwarding
-                sudo docker run \
-                  -e DISPLAY=:2 \
-                  -v /tmp/.X11-unix:/tmp/.X11-unix \
-                  -v $HOME/.Xauthority:/root/.Xauthority \
-                  --name gazebo_container \
-                  tortoisebot_ros1 \
-                  bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
+                sudo docker run -it \
+                    -e DISPLAY=$DISPLAY \
+                    -v /tmp/.X11-unix:/tmp/.X11-unix \
+                    -v $HOME/.Xauthority:/root/.Xauthority \ # Critical!
+                    --name gazebo_container \
+                    tortoisebot_ros1 \
+                    bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
 
-                echo "Gazebo container started."
-                # Wait long enough for you to connect and see the GUI
-                export DISPLAY=:2
-                sleep 198
+                echo "Gazebo container finished."
                 '''
             }
         }

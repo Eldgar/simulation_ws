@@ -8,7 +8,7 @@ pipeline {
             steps {
                 sh '''
                 cd $WORKSPACE/src/
-                docker build -t tortoisebot_ros1 .
+                sudo docker build -t tortoisebot_ros1 .
                 '''
             }
         }
@@ -21,8 +21,8 @@ pipeline {
                 # Check if the container already exists
                 if [ "$(docker ps -aq -f name=gazebo_container)" ]; then
                     echo "Stopping and removing existing gazebo_container..."
-                    docker stop gazebo_container || true
-                    docker rm gazebo_container || true
+                    sudo docker stop gazebo_container || true
+                    sudo docker rm gazebo_container || true
                 fi
 
                 # Run the Docker container with X11 forwarding
@@ -42,8 +42,8 @@ pipeline {
             steps {
                 sh '''
                 echo "Stopping and removing gazebo_container..."
-                docker stop gazebo_container || true
-                docker rm gazebo_container || true
+                sudo docker stop gazebo_container || true
+                sudo docker rm gazebo_container || true
                 echo "Docker container cleaned up."
                 '''
             }

@@ -35,6 +35,10 @@ catkin_package(
     tf
 )
 
+catkin_install_python(PROGRAMS scripts/tortoisebot_action_server.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
 

@@ -1,2 +1,2 @@
-tortoisebot/tortoisebot_control:tortoisebot/tortoisebot_description:tortoisebot/tortoisebot_firmware:tortoisebot/tortoisebot_gazebo:tortoisebot/tortoisebot_navigation:tortoisebot/tortoisebot_slam:tortoisebot/ydlidar_ros
+tortoisebot/tortoisebot_control:tortoisebot/tortoisebot_description:tortoisebot/tortoisebot_firmware:tortoisebot/tortoisebot_gazebo:tortoisebot/tortoisebot_navigation:tortoisebot/tortoisebot_slam:tortoisebot/ydlidar_ros:tortoisebot_waypoints
 -DCATKIN_DEVEL_PREFIX=/home/user/simulation_ws/devel -DCMAKE_INSTALL_PREFIX=/home/user/simulation_ws/install -G Unix Makefiles

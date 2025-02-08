@@ -30,7 +30,7 @@ class WaypointActionClass(object):
     # goal
     _des_pos = Point()
     # parameters
-    _yaw_precision = math.pi / 180 # +/- 1 degree allowed
+    _yaw_precision = math.pi / 180 
     _dist_precision = 0.05
 
     def __init__(self):

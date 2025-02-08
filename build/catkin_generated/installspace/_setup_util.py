@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
         if not args.local:
             # environment at generation time
-            CMAKE_PREFIX_PATH = r'/opt/ros/noetic;/home/simulations/ros2_sims_ws/install/ros1_bridge;/home/user/ros2_ws/install/ydlidar;/home/user/ros2_ws/install/tortoisebot_slam;/home/user/ros2_ws/install/tortoisebot_navigation;/home/user/ros2_ws/install/tortoisebot_gazebo;/home/user/ros2_ws/install/tortoisebot_firmware;/home/user/ros2_ws/install/tortoisebot_description;/home/user/ros2_ws/install/tortoisebot_bringup'.split(';')
+            CMAKE_PREFIX_PATH = r'/home/user/simulation_ws/devel;/opt/ros/noetic;/home/simulations/ros2_sims_ws/install/ros1_bridge;/home/user/ros2_ws/install/ydlidar;/home/user/ros2_ws/install/tortoisebot_slam;/home/user/ros2_ws/install/tortoisebot_navigation;/home/user/ros2_ws/install/tortoisebot_gazebo;/home/user/ros2_ws/install/tortoisebot_firmware;/home/user/ros2_ws/install/tortoisebot_description;/home/user/ros2_ws/install/tortoisebot_bringup'.split(';')
         else:
             # don't consider any other prefix path than this one
             CMAKE_PREFIX_PATH = []

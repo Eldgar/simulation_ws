@@ -137,6 +137,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/home/user/simulation_ws/build/tortoisebot/tortoisebot_gazebo/cmake_install.cmake")
   include("/home/user/simulation_ws/build/tortoisebot/tortoisebot_navigation/cmake_install.cmake")
   include("/home/user/simulation_ws/build/tortoisebot/tortoisebot_slam/cmake_install.cmake")
+  include("/home/user/simulation_ws/build/tortoisebot_waypoints/cmake_install.cmake")
   include("/home/user/simulation_ws/build/tortoisebot/ydlidar_ros/cmake_install.cmake")
 
 endif()

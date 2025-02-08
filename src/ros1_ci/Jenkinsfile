@@ -1,6 +1,8 @@
 pipeline {
     agent any  // Use any available agent
-
+    environment {
+        DISPLAY = ":2"
+    }
     stages {
         stage('Setup Environment') {
             steps {
@@ -30,18 +32,15 @@ pipeline {
                 sh '''
                 source /opt/ros/noetic/setup.bash
                 source ~/simulation_ws/devel/setup.bash
-
-                # Start Gazebo in the background
-                roslaunch tortoisebot_gazebo tortoisebot_world.launch & 
+                export DISPLAY=:2
+                roslaunch tortoisebot_gazebo tortoisebot_playground.launch &
                 GAZEBO_PID=$!
-                
-                # Wait for Gazebo to fully start
-                sleep 400
-                
+                sleep 10
                 echo "Gazebo started with PID $GAZEBO_PID."
                 '''
             }
         }
+
 
         stage('Check Simulation Status') {
             steps {

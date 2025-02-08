@@ -38,6 +38,6 @@ RUN rosdep install --from-paths src --ignore-src -r -y
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && catkin_make"
 
 # Set up entrypoint
-RUN echo "source ${CATKIN_WS}/devel/setup.bash" >> /root/.bashrc
+RUN echo "source devel/setup.bash" >> /root/.bashrc
 ENTRYPOINT ["/bin/bash", "-c", "source /root/.bashrc && bash"]
 

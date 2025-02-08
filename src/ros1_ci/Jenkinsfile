@@ -20,7 +20,7 @@ pipeline {
                     sudo docker rm gazebo_container || true
                 fi
 
-                sudo docker run --rm -it \
+                sudo docker run --rm \
                     -e DISPLAY=$DISPLAY \
                     -v /tmp/.X11-unix:/tmp/.X11-unix \
                     --name gazebo_container \

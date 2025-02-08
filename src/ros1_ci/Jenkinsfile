@@ -23,7 +23,7 @@ pipeline {
                 fi
 
                 # Run the Docker container with X11 forwarding
-                sudo docker run -d \
+                sudo docker run \
                   -e DISPLAY=:2 \
                   -v /tmp/.X11-unix:/tmp/.X11-unix \
                   -v $HOME/.Xauthority:/root/.Xauthority \

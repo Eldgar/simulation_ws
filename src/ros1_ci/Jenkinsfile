@@ -15,9 +15,6 @@ pipeline {
         stage('Launch Gazebo in Docker') {
             steps {
                 sh '''
-                # Allow local root connections to X server (if not already set)
-                xhost +local:root
-
                 # Run the Docker container with X11 forwarding
                 sudo docker run -d \
                   -e DISPLAY=:2 \

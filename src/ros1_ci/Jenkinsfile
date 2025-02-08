@@ -8,7 +8,7 @@ pipeline {
             steps {
                 sh '''
                 cd $WORKSPACE/src/
-                docker build -t tortoisebot_ros1 .
+                sudo docker build -t tortoisebot_ros1 .
                 '''
             }
         }
@@ -19,7 +19,7 @@ pipeline {
                 xhost +local:root
 
                 # Run the Docker container with X11 forwarding
-                docker run -d \
+                sudo docker run -d \
                   -e DISPLAY=:2 \
                   -v /tmp/.X11-unix:/tmp/.X11-unix \
                   -v $HOME/.Xauthority:/root/.Xauthority \
@@ -35,8 +35,8 @@ pipeline {
         stage('Cleanup') {
             steps {
                 sh '''
-                docker stop gazebo_container || true
-                docker rm gazebo_container || true
+                sudo docker stop gazebo_container || true
+                sudo docker rm gazebo_container || true
                 echo "Docker container cleaned up."
                 '''
             }

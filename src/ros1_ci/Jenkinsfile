@@ -34,7 +34,7 @@ pipeline {
                 echo "Gazebo container started."
                 # Wait long enough for you to connect and see the GUI
                 export DISPLAY=:2
-                sleep 200
+                sleep 198
                 '''
             }
         }
@@ -59,7 +59,7 @@ pipeline {
         */
     }
     triggers {
-        pollSCM('H/4 * * * *')
+        pollSCM('H/3 * * * *')
     }
 }
 

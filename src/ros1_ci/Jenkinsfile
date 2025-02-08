@@ -35,7 +35,7 @@ pipeline {
                 export DISPLAY=:2
                 roslaunch tortoisebot_gazebo tortoisebot_playground.launch &
                 GAZEBO_PID=$!
-                sleep 10
+                sleep 100
                 echo "Gazebo started with PID $GAZEBO_PID."
                 '''
             }

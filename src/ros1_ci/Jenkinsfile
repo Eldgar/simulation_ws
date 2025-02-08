@@ -15,7 +15,6 @@ pipeline {
         stage('Launch Gazebo in Docker') {
             steps {
                 sh '''
-
                 # Check if the container already exists
                 if [ "$(docker ps -aq -f name=gazebo_container)" ]; then
                     echo "Stopping and removing existing gazebo_container..."
@@ -33,9 +32,12 @@ pipeline {
                   bash -c "source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
 
                 echo "Gazebo container started."
+                # Wait long enough for you to connect and see the GUI
+                sleep 300
                 '''
             }
         }
+        /*
         stage('Cleanup') {
             steps {
                 sh '''
@@ -46,6 +48,7 @@ pipeline {
                 '''
             }
         }
+        */
     }
     triggers {
         pollSCM('H/4 * * * *')

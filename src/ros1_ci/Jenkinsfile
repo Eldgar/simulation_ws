@@ -1,80 +1,48 @@
 pipeline {
-    agent any  // Use any available agent
+    agent any
     environment {
-        DISPLAY = ":2"
+        DISPLAY = ":2"  // Set display for all steps if needed
     }
     stages {
-        stage('Setup Environment') {
+        stage('Build Docker Image') {
             steps {
                 sh '''
-                # Source ROS 1 Noetic and workspace
-                source /opt/ros/noetic/setup.bash
-                source ~/simulation_ws/devel/setup.bash
-                
-                echo "ROS 1 environment set up."
+                cd $WORKSPACE/src/
+                docker build -t tortoisebot_ros1 .
                 '''
             }
         }
-
-        stage('Build Workspace') {
+        stage('Launch Gazebo in Docker') {
             steps {
                 sh '''
-                source /opt/ros/noetic/setup.bash
-                source ~/simulation_ws/devel/setup.bash
+                # Allow local root connections to X server (if not already set)
+                xhost +local:root
 
-                cd ~/simulation_ws
+                # Run the Docker container with X11 forwarding
+                docker run -d \
+                  -e DISPLAY=:2 \
+                  -v /tmp/.X11-unix:/tmp/.X11-unix \
+                  -v $HOME/.Xauthority:/root/.Xauthority \
+                  --name gazebo_container \
+                  tortoisebot_ros1 \
+                  bash -c "source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
+                  
+                echo "Gazebo container started."
                 '''
             }
         }
-
-        stage('Launch Gazebo') {
-            steps {
-                sh '''
-                source /opt/ros/noetic/setup.bash
-                source ~/simulation_ws/devel/setup.bash
-                export DISPLAY=:2
-                roslaunch tortoisebot_gazebo tortoisebot_playground.launch &
-                GAZEBO_PID=$!
-                sleep 100
-                echo "Gazebo started with PID $GAZEBO_PID."
-                '''
-            }
-        }
-
-
-        stage('Check Simulation Status') {
-            steps {
-                sh '''
-                source /opt/ros/noetic/setup.bash
-                source ~/simulation_ws/devel/setup.bash
-
-                # Check if Gazebo is running
-                if pgrep -x "gzserver" > /dev/null; then
-                    echo "Gazebo is running."
-                else
-                    echo "Gazebo is NOT running."
-                    exit 1
-                fi
-                '''
-            }
-        }
-
+        // Additional stages (e.g., tests, cleanup) can follow
         stage('Cleanup') {
             steps {
                 sh '''
-                source /opt/ros/noetic/setup.bash
-                source ~/simulation_ws/devel/setup.bash
-
-                # Kill Gazebo processes after the test
-                pkill -f gzserver || true
-                pkill -f gzclient || true
-                echo "Gazebo shut down."
+                docker stop gazebo_container || true
+                docker rm gazebo_container || true
+                echo "Docker container cleaned up."
                 '''
             }
         }
     }
-
     triggers {
-        pollSCM('H/4 * * * *')  // Poll GitHub for changes every 4 minutes
+        pollSCM('H/4 * * * *')
     }
 }

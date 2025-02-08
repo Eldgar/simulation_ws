@@ -2,30 +2,67 @@ pipeline {
     agent any  // Use any available agent
 
     stages {
-        stage('Build Docker Image') {
+        stage('Setup Environment') {
             steps {
                 sh '''
-                cd $WORKSPACE/src/
-                sudo docker build -t tortoisebot_ros1 .
+                # Source ROS Noetic and workspace
+                source /opt/ros/noetic/setup.bash
+                source ~/simulation_ws/devel/setup.bash
+                
+                echo "ROS environment set up."
                 '''
             }
         }
 
-        stage('Start Gazebo Container') {
+        stage('Build Workspace') {
             steps {
                 sh '''
-                # Start the container without launching Gazebo
-                sudo docker run -d \
-                    -e DISPLAY=:2 \
-                    -e QT_X11_NO_MITSHM=1 \
-                    -v /tmp/.X11-unix:/tmp/.X11-unix \
-                    --name gazebo_container \
-                    tortoisebot_ros1 \
-                    /bin/bash -c "source /opt/ros/noetic/setup.bash && \
-                                  source ~/simulation_ws/devel/setup.bash && \
-                                  bash"
-                                  
-                echo "Gazebo container started. You can now manually attach and run Gazebo."
+                cd ~/simulation_ws
+                catkin_make
+                '''
+            }
+        }
+
+        stage('Launch Gazebo') {
+            steps {
+                sh '''
+                # Start Gazebo in a screen session so it runs in the background
+                screen -dmS gazebo_session roslaunch tortoisebot_gazebo tortoisebot_world.launch
+                sleep 10
+                echo "Gazebo started."
+                '''
+            }
+        }
+
+        stage('Run Waypoints Action Server Tests') {
+            steps {
+                sh '''
+                roslaunch tortoisebot_waypoints waypoints_test.launch
+                '''
+            }
+        }
+
+        stage('Check Simulation Status') {
+            steps {
+                sh '''
+                # Check if Gazebo is running
+                if pgrep -x "gzserver" > /dev/null; then
+                    echo "Gazebo is running."
+                else
+                    echo "Gazebo is NOT running."
+                    exit 1
+                fi
+                '''
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                sh '''
+                # Kill Gazebo processes after the test
+                pkill -f gzserver || true
+                pkill -f gzclient || true
+                echo "Gazebo shut down."
                 '''
             }
         }
@@ -35,6 +72,7 @@ pipeline {
         pollSCM('H/4 * * * *')  // Poll GitHub for changes every 4 minutes
     }
 }
+
 
 
 

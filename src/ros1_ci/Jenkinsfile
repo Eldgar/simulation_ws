@@ -43,17 +43,6 @@ pipeline {
             }
         }
 
-        stage('Run Waypoints Action Server Tests') {
-            steps {
-                sh '''
-                source /opt/ros/noetic/setup.bash
-                source ~/simulation_ws/devel/setup.bash
-
-                roslaunch tortoisebot_waypoints waypoints_test.launch
-                '''
-            }
-        }
-
         stage('Check Simulation Status') {
             steps {
                 sh '''

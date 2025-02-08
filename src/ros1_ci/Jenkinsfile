@@ -23,7 +23,6 @@ pipeline {
                 sudo docker run -it \
                     -e DISPLAY=$DISPLAY \
                     -v /tmp/.X11-unix:/tmp/.X11-unix \
-                    -v $HOME/.Xauthority:/root/.Xauthority
                     --name gazebo_container \
                     tortoisebot_ros1 \
                     bash -c "source /opt/ros/noetic/setup.bash && source devel/setup.bash && roslaunch tortoisebot_gazebo tortoisebot_playground.launch"

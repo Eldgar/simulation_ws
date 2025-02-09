@@ -28,7 +28,7 @@ pipeline {
 
                 echo "Launching simulation container with ROS Master, Gazebo, and Action Server..."
                 sudo docker run -d --rm --name simulation_container \
-                    -e ROS_MASTER_URI=http://localhost:11311 \
+                    -e ROS_MASTER_URI=http://master:11311 \
                     tortoisebot_ros1 \
                     bash -c "source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && \
                              roscore > /dev/null 2>&1 & sleep 5 && \
@@ -47,7 +47,7 @@ pipeline {
                 sh '''
                 echo "Running Waypoints Test on host..."
                 source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && \
-                export ROS_MASTER_URI=http://localhost:11311 && \
+                export ROS_MASTER_URI=http://master:11311 && \
                 rostest tortoisebot_waypoints waypoints_test.test --reuse-master --text
                 echo "Waypoints Test completed."
                 '''

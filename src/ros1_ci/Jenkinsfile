@@ -29,15 +29,7 @@ pipeline {
                 '''
             }
         }
-        stage('Cleanup') {
-            steps {
-                sh '''
-                echo "Stopping all Docker containers..."
-                sudo docker-compose -f ~/simulation_ws/src/docker-compose.yml down
-                echo "Cleanup complete."
-                '''
-            }
-        }
+
     }
     triggers {
         // Poll the repository every 3 minutes.

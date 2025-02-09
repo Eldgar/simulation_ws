@@ -14,9 +14,6 @@ pipeline {
         stage('Launch Simulation with Docker Compose') {
             steps {
                 sh '''
-                echo "Stopping existing Docker containers..."
-                sudo docker-compose -f ~/simulation_ws/src/docker-compose.yml down || true
-
                 echo "Starting Docker Compose..."
                 sudo docker-compose -f ~/simulation_ws/src/docker-compose.yml up -d
                 echo "Waiting for containers to initialize..."

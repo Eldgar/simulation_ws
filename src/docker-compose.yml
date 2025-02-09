@@ -2,18 +2,23 @@ version: '3.7'
 
 services:
   # ROS Master running roscore
-  master:
+   master:
     image: osrf/ros:noetic-desktop-full
     container_name: ros1_master
     ports:
-      - "11311:11311" # Expose roscore to the host (optional)
+      - "11311:11311"
     networks:
       - rosnet
-    command: /bin/bash -c "source /opt/ros/noetic/setup.bash && roscore"
+    command: /bin/bash -c "source /opt/ros/noetic/setup.bash && roscore && sleep infinity"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "rostopic list || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Gazebo container
   gazebo:
-    image: eldgar/tortoisebot-ros1-gazebo
+    image: eldgar/tortoisebot-ros1-gazebo-updated
     container_name: tortoisebot-ros1-gazebo
     depends_on:
       - master

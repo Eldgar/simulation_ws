@@ -29,6 +29,8 @@ services:
     command: >
       bash -c "source /opt/ros/noetic/setup.bash &&
                source devel/setup.bash &&
+               cd src &&
+               ls &&
                roslaunch tortoisebot_gazebo tortoisebot_playground.launch &&
                rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
 

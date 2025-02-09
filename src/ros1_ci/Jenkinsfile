@@ -25,19 +25,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Fetching logs from Gazebo container..."
-                sudo docker logs tortoisebot-ros1-gazebo
-                '''
-            }
-        }
-        stage('Run Waypoints Test on Host') {
-            steps {
-                sh '''
-                echo "Running Waypoints Test on host..."
-                source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && \
-                export ROS_MASTER_URI=http://xterm1:11311 && \
-                rostest tortoisebot_waypoints waypoints_test.test --reuse-master --text
-                echo "Waypoints Test completed."
-                echo $ROS_MASTER_URI
+                sudo docker logs tortoisebot-ros1-test
                 '''
             }
         }

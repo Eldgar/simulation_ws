@@ -28,7 +28,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix  # Enable GUI display for Gazebo
     command: >
       bash -c "source /opt/ros/noetic/setup.bash &&
-               source /simulation_ws/devel/setup.bash &&
+               source devel/setup.bash &&
                roslaunch tortoisebot_gazebo tortoisebot_playground.launch &&
                rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
 
@@ -44,7 +44,7 @@ services:
       - ROS_MASTER_URI=http://master:11311
     command: >
       bash -c "source /opt/ros/noetic/setup.bash &&
-               source /simulation_ws/devel/setup.bash &&
+               source devel/setup.bash &&
                rosrun tortoisebot_waypoints tortoisebot_action_server.py"
 
   # test:

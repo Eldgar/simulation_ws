@@ -4,16 +4,20 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 sh '''
+                echo "Sourcing ROS environment..."
                 source /opt/ros/noetic/setup.bash
                 source ~/simulation_ws/devel/setup.bash
+                echo "ROS environment sourced."
                 '''
             }
         }
         stage('Ensure Executable Permissions') {
             steps {
                 sh '''
+                echo "Setting executable permissions on action server and test scripts..."
                 chmod +x ~/simulation_ws/src/tortoisebot_waypoints/scripts/tortoisebot_action_server.py
                 chmod +x ~/simulation_ws/src/tortoisebot_waypoints/test/waypoints_test.py
+                echo "Executable permissions set."
                 '''
             }
         }
@@ -21,10 +25,12 @@ pipeline {
             steps {
                 sh '''
                 echo "Starting Gazebo..."
+                source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash
                 roslaunch tortoisebot_gazebo tortoisebot_playground.launch --screen &
                 sleep 10
 
                 echo "Starting Action Server..."
+                source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash
                 rosrun tortoisebot_waypoints tortoisebot_action_server.py --screen &
                 sleep 5
                 '''
@@ -34,6 +40,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Running Waypoints Test..."
+                source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash
                 rostest tortoisebot_waypoints waypoints_test.test --reuse-master --text
                 '''
             }
@@ -42,6 +49,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Stopping ROS Nodes..."
+                source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash
                 rosnode kill -a || true
                 '''
             }
@@ -51,6 +59,7 @@ pipeline {
         pollSCM('H/3 * * * *')
     }
 }
+
 
 
 

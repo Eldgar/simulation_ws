@@ -1,38 +1,40 @@
 pipeline {
     agent any
     stages {
-        stage('Setup Environment') {
+        stage('Build Docker Image') {
             steps {
                 sh '''
-                echo "Sourcing ROS environment..."
-                source /opt/ros/noetic/setup.bash
-                source ~/simulation_ws/devel/setup.bash
-                echo "ROS environment sourced."
+                cd $WORKSPACE/src/
+                sudo docker build -t tortoisebot_ros1 .
                 '''
             }
         }
         stage('Ensure Executable Permissions') {
             steps {
                 sh '''
-                echo "Setting executable permissions on action server and test scripts..."
+                echo "Setting executable permissions..."
                 chmod +x ~/simulation_ws/src/tortoisebot_waypoints/scripts/tortoisebot_action_server.py
                 chmod +x ~/simulation_ws/src/tortoisebot_waypoints/test/waypoints_test.py
-                echo "Executable permissions set."
                 '''
             }
         }
-        stage('Launch Gazebo & Action Server') {
+        stage('Launch Gazebo & Action Server in Docker') {
             steps {
                 sh '''
-                echo "Starting Gazebo..."
-                source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash
-                roslaunch tortoisebot_gazebo tortoisebot_playground.launch --screen &
-                sleep 10
-
-                echo "Starting Action Server..."
-                source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash
-                rosrun tortoisebot_waypoints tortoisebot_action_server.py --screen &
-                sleep 5
+                echo "Stopping and removing any existing simulation container..."
+                sudo docker stop simulation_container || true
+                sudo docker rm simulation_container || true
+                
+                echo "Launching Gazebo and Action Server..."
+                sudo docker run --rm --name simulation_container tortoisebot_ros1 \
+                    bash -c "
+                        source /opt/ros/noetic/setup.bash && source devel/setup.bash &&
+                        echo 'Starting Gazebo...' &&
+                        roslaunch tortoisebot_gazebo tortoisebot_playground.launch --screen &
+                        sleep 10 &&
+                        echo 'Gazebo launched, starting Action Server...' &&
+                        rosrun tortoisebot_waypoints tortoisebot_action_server.py --screen
+                    "
                 '''
             }
         }

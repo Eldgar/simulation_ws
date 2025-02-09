@@ -1,11 +1,24 @@
-# Extend the existing image
-FROM eldgar/tortoisebot-ros1-gazebo
+# Use ROS Noetic as base
+FROM osrf/ros:noetic-desktop-full
 
-# Copy the missing package into the container
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ROS_MASTER_URI=http://localhost:11311
+
+# Install dependencies
+RUN apt update && apt install -y \
+    python3-pip \
+    ros-noetic-catkin \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a workspace
+WORKDIR /simulation_ws
+
+# Copy the ROS package into the container
 COPY ./tortoisebot_waypoints /simulation_ws/src/tortoisebot_waypoints
 
-# Build the workspace inside the container
-RUN source /opt/ros/noetic/setup.bash && \
-    cd /simulation_ws && \
-    catkin_make && \
-    source devel/setup.bash
+# Source ROS setup
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && catkin_make"
+
+# Set the default command
+CMD ["bash"]

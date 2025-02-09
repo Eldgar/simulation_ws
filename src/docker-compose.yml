@@ -15,7 +15,7 @@ services:
 
   # Gazebo container
   gazebo:
-    image: eldgar/tortoisebot-ros1-gazebo-updated  # Ensure you use the updated image
+    image: eldgar/tortoisebot-ros1-gazebo-test  # Ensure you use the updated image
     container_name: tortoisebot-ros1-gazebo
     depends_on:
       - master

@@ -15,44 +15,48 @@ pipeline {
                 echo "Setting executable permissions..."
                 chmod +x ~/simulation_ws/src/tortoisebot_waypoints/scripts/tortoisebot_action_server.py
                 chmod +x ~/simulation_ws/src/tortoisebot_waypoints/test/waypoints_test.py
+                echo "Executable permissions set."
                 '''
             }
         }
-        stage('Launch Gazebo & Action Server in Docker') {
+        stage('Launch Simulation Container') {
             steps {
                 sh '''
-                echo "Stopping and removing any existing simulation container..."
+                echo "Stopping any existing simulation container..."
                 sudo docker stop simulation_container || true
                 sudo docker rm simulation_container || true
-                
-                echo "Launching Gazebo and Action Server..."
-                sudo docker run --rm --name simulation_container tortoisebot_ros1 \
-                    bash -c "
-                        source /opt/ros/noetic/setup.bash && source devel/setup.bash &&
-                        echo 'Starting Gazebo...' &&
-                        roslaunch tortoisebot_gazebo tortoisebot_playground.launch --screen &
-                        sleep 10 &&
-                        echo 'Gazebo launched, starting Action Server...' &&
-                        rosrun tortoisebot_waypoints tortoisebot_action_server.py --screen
-                    "
+
+                echo "Launching simulation container with ROS Master, Gazebo, and Action Server..."
+                sudo docker run -d --rm --net=host --name simulation_container tortoisebot_ros1 \
+                    bash -c "source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && \
+                             roscore > /dev/null 2>&1 & \
+                             sleep 5 && \
+                             echo 'roscore started' && \
+                             roslaunch tortoisebot_gazebo tortoisebot_playground.launch --screen & \
+                             sleep 10 && \
+                             echo 'Gazebo launched, starting Action Server...' && \
+                             rosrun tortoisebot_waypoints tortoisebot_action_server.py --screen && \
+                             tail -f /dev/null"
+                sleep 15
                 '''
             }
         }
         stage('Run Waypoints Test') {
             steps {
                 sh '''
-                echo "Running Waypoints Test..."
-                source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash
-                rostest tortoisebot_waypoints waypoints_test.test --reuse-master --text
+                echo "Running waypoints test inside simulation container..."
+                sudo docker exec simulation_container bash -c "source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && \
+                              rostest tortoisebot_waypoints waypoints_test.test --reuse-master --text"
+                echo "Waypoints test completed."
                 '''
             }
         }
         stage('Cleanup') {
             steps {
                 sh '''
-                echo "Stopping ROS Nodes..."
-                source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash
-                rosnode kill -a || true
+                echo "Stopping simulation container..."
+                sudo docker stop simulation_container || true
+                echo "Cleanup complete."
                 '''
             }
         }
@@ -61,6 +65,7 @@ pipeline {
         pollSCM('H/3 * * * *')
     }
 }
+
 
 
 

@@ -1,0 +1,37 @@
+version: "3.7"
+
+services:
+  master:
+    image: osrf/ros:noetic-desktop-full
+    container_name: master
+    networks:
+      - rosnet
+    environment:
+      - ROS_HOSTNAME=master
+      - ROS_MASTER_URI=http://master:11311
+    command: bash -c "source /opt/ros/noetic/setup.bash && roscore && tail -f /dev/null"
+    restart: unless-stopped  # Keep ROS Master running
+
+  simulation_container:
+    image: tortoisebot_ros1
+    container_name: simulation_container
+    depends_on:
+      - master
+    networks:
+      - rosnet
+    environment:
+      - ROS_MASTER_URI=http://master:11311
+    command: >
+      bash -c "
+      source /opt/ros/noetic/setup.bash &&
+      source ~/simulation_ws/devel/setup.bash &&
+      echo 'Starting Gazebo...' &&
+      roslaunch tortoisebot_gazebo tortoisebot_playground.launch --screen &&
+      echo 'Gazebo launched, starting Action Server...' &&
+      rosrun tortoisebot_waypoints tortoisebot_action_server.py &&
+      tail -f /dev/null"
+    restart: unless-stopped  # Keep running if it crashes
+
+networks:
+  rosnet:
+    driver: bridge

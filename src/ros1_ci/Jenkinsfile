@@ -1,14 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage('Build Docker Image') {
-            steps {
-                sh '''
-                cd $WORKSPACE/src/
-                sudo docker build -t tortoisebot_ros1 .
-                '''
-            }
-        }
         stage('Ensure Executable Permissions') {
             steps {
                 sh '''
@@ -19,26 +11,24 @@ pipeline {
                 '''
             }
         }
-        stage('Launch Simulation Container') {
+        stage('Launch Simulation with Docker Compose') {
             steps {
                 sh '''
-                echo "Stopping any existing simulation container..."
-                sudo docker stop simulation_container || true
-                sudo docker rm simulation_container || true
+                echo "Stopping existing Docker containers..."
+                sudo docker-compose -f ~/simulation_ws/src/docker-compose.yml down || true
 
-                echo "Launching simulation container with ROS Master, Gazebo, and Action Server..."
-                sudo docker run -d --rm --name simulation_container \
-                    -e ROS_MASTER_URI=http://xterm1:11311 \
-                    tortoisebot_ros1 \
-                    bash -c "source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && \
-                             roscore > /dev/null 2>&1 & sleep 5 && \
-                             echo 'roscore started' && \
-                             roslaunch tortoisebot_gazebo tortoisebot_playground.launch --screen & sleep 10 && \
-                             echo 'Gazebo launched, starting Action Server...' && \
-                             rosrun tortoisebot_waypoints tortoisebot_action_server.py --screen && \
-                             tail -f /dev/null"
-                # Allow extra time for all nodes to initialize
+                echo "Starting Docker Compose..."
+                sudo docker-compose -f ~/simulation_ws/src/docker-compose.yml up -d
+                echo "Waiting for containers to initialize..."
                 sleep 15
+                '''
+            }
+        }
+        stage('Check Gazebo Logs') {
+            steps {
+                sh '''
+                echo "Fetching logs from Gazebo container..."
+                sudo docker logs tortoisebot-ros1-gazebo
                 '''
             }
         }
@@ -57,8 +47,8 @@ pipeline {
         stage('Cleanup') {
             steps {
                 sh '''
-                echo "Stopping simulation container..."
-                sudo docker stop simulation_container || true
+                echo "Stopping all Docker containers..."
+                sudo docker-compose -f ~/simulation_ws/src/docker-compose.yml down
                 echo "Cleanup complete."
                 '''
             }
@@ -69,6 +59,7 @@ pipeline {
         pollSCM('H/3 * * * *')
     }
 }
+
 
 
 

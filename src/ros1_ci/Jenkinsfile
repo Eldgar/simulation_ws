@@ -25,7 +25,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Fetching logs from Gazebo container..."
-                sudo docker logs tortoisebot-ros1-test
+                sudo docker logs tortoisebot-ros1-gazebo
                 '''
             }
         }

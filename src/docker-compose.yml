@@ -18,7 +18,7 @@ services:
     image: eldgar/tortoisebot-ros1-gazebo-test  # Ensure you use the updated image
     container_name: tortoisebot-ros1-gazebo
     depends_on:
-      - master
+      - waypoints
     networks:
       - rosnet
     environment:
@@ -29,14 +29,15 @@ services:
     command: >
       bash -c "source /opt/ros/noetic/setup.bash &&
                source /simulation_ws/devel/setup.bash &&
-               roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
+               roslaunch tortoisebot_gazebo tortoisebot_playground.launch &&
+               rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
 
   # Waypoints container
   waypoints:
     image: eldgar/tortoisebot-ros1-gazebo-test
     container_name: tortoisebot-ros1-waypoints
     depends_on:
-      - gazebo
+      - master
     networks:
       - rosnet
     environment:
@@ -46,21 +47,19 @@ services:
                source /simulation_ws/devel/setup.bash &&
                rosrun tortoisebot_waypoints tortoisebot_action_server.py"
 
-
-  
-  test:
-    image: eldgar/tortoisebot-ros1-gazebo-test
-    container_name: tortoisebot-ros1-test
-    depends_on:
-      - waypoints
-    networks:
-      - rosnet
-    environment:
-      - ROS_MASTER_URI=http://master:11311
-    command: >
-      bash -c "source /opt/ros/noetic/setup.bash &&
-               source /simulation_ws/devel/setup.bash &&
-               rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
+  # test:
+  #   image: eldgar/tortoisebot-ros1-gazebo-test
+  #   container_name: tortoisebot-ros1-test
+  #   depends_on:
+  #     - waypoints
+  #   networks:
+  #     - rosnet
+  #   environment:
+  #     - ROS_MASTER_URI=http://master:11311
+  #   command: >
+  #     bash -c "source /opt/ros/noetic/setup.bash &&
+  #              source /simulation_ws/devel/setup.bash &&
+  #              rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
 
 networks:
   rosnet:

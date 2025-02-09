@@ -27,7 +27,7 @@ pipeline {
                 sudo docker rm simulation_container || true
 
                 echo "Launching simulation container with ROS Master, Gazebo, and Action Server..."
-                sudo docker run -d --rm --net=host --name simulation_container tortoisebot_ros1 \
+                sudo docker run -d --rm --name simulation_container tortoisebot_ros1 \
                     bash -c "source /opt/ros/noetic/setup.bash && source ~/simulation_ws/devel/setup.bash && \
                              roscore > /dev/null 2>&1 & \
                              sleep 5 && \

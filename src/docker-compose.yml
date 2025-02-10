@@ -10,12 +10,15 @@ services:
     networks:
       - rosnet
     command: >
-      bash -c "source /opt/ros/noetic/setup.bash &&
-               roscore"
+      bash -c "
+        source /opt/ros/noetic/setup.bash &&
+        roscore &
+        sleep 5 &&  # Allow time for ROS Master to initialize
+        wait"
 
   # Gazebo container
   gazebo:
-    image: eldgar/tortoisebot-ros1-gazebo  # Ensure you use the updated image
+    image: eldgar/tortoisebot-ros1-gazebo
     container_name: tortoisebot-ros1-gazebo
     depends_on:
       - master
@@ -27,9 +30,13 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix  # Enable GUI display for Gazebo
     command: >
-      bash -c "source /opt/ros/noetic/setup.bash &&
-               source devel/setup.bash &&
-               roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
+      bash -c "
+        source /opt/ros/noetic/setup.bash &&
+        source devel/setup.bash &&
+        echo 'Waiting for ROS Master...';
+        until rostopic list; do sleep 2; done;  # Retry connecting to ROS Master
+        sleep 5 &&  # Additional wait time
+        roslaunch tortoisebot_gazebo tortoisebot_playground.launch"
 
   # Waypoints container
   waypoints:
@@ -42,10 +49,15 @@ services:
     environment:
       - ROS_MASTER_URI=http://master:11311
     command: >
-      bash -c "source /opt/ros/noetic/setup.bash &&
-               source devel/setup.bash &&
-               rosrun tortoisebot_waypoints tortoisebot_action_server.py"
+      bash -c "
+        source /opt/ros/noetic/setup.bash &&
+        source devel/setup.bash &&
+        echo 'Waiting for Gazebo to be ready...';
+        until rostopic list | grep /cmd_vel; do sleep 2; done;  # Wait for Gazebo to publish topics
+        sleep 8 &&
+        rosrun tortoisebot_waypoints tortoisebot_action_server.py"
 
+  # Test container
   test:
     image: eldgar/tortoisebot-ros1-waypoints-test
     container_name: tortoisebot-ros1-test
@@ -56,11 +68,20 @@ services:
     environment:
       - ROS_MASTER_URI=http://master:11311
     command: >
-      bash -c "source /opt/ros/noetic/setup.bash &&
-               source /simulation_ws/devel/setup.bash &&
-               rostest tortoisebot_waypoints waypoints_test.test --reuse-master"
+      bash -c "
+        source /opt/ros/noetic/setup.bash &&
+        source /simulation_ws/devel/setup.bash &&
+        echo 'Waiting for ROS Master...';
+        for i in {1..10}; do  # Retry for 20 seconds
+          if rostopic list; then
+            echo 'ROS Master is up!';
+            rostest tortoisebot_waypoints waypoints_test.test --reuse-master;
+            exit 0;
+          fi
+          echo 'ROS Master not ready, retrying...';
+          sleep 3;
+        done;
+        echo 'ROS Master did not start in time, exiting.';
+        exit 1;"
 
-networks:
-  rosnet:
-    driver: bridge
 

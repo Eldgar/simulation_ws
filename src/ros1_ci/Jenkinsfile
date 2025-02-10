@@ -24,7 +24,7 @@ pipeline {
         stage('Check Gazebo Logs') {
             steps {
                 sh '''
-                echo "Fetching logs from Gazebo container..."
+                echo "Fetching logs from  test container..."
                 sudo docker logs tortoisebot-ros1-test
                 '''
             }

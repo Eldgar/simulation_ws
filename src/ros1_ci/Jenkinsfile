@@ -14,9 +14,6 @@ pipeline {
         stage('Launch Simulation with Docker Compose') {
             steps {
                 sh '''
-                echo "Ensuring the Docker network exists..."
-                sudo docker network create rosnet || true  # Ignore error if network already exists
-
                 echo "Starting Docker Compose..."
                 sudo docker-compose -f /home/user/simulation_ws/src/docker-compose.yml up -d
                 sleep 15

@@ -7,6 +7,8 @@ newgrp docker
 
 sudo systemctl restart docker
 
+sudo docker network create rosnet
+
 cd ~/webpage_ws
 bash start_jenkins.sh
 

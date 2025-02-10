@@ -18,7 +18,7 @@ services:
     image: eldgar/tortoisebot-ros1-gazebo  # Ensure you use the updated image
     container_name: tortoisebot-ros1-gazebo
     depends_on:
-      - waypoints
+      - master
     networks:
       - rosnet
     environment:
@@ -35,10 +35,10 @@ services:
 
   # Waypoints container
   waypoints:
-    image: eldgar/tortoisebot-ros1-gazebo-test
+    image: eldgar/tortoisebot-ros1-waypoints-test
     container_name: tortoisebot-ros1-waypoints
     depends_on:
-      - master
+      - gazebo
     networks:
       - rosnet
     environment:
@@ -49,7 +49,7 @@ services:
                rosrun tortoisebot_waypoints tortoisebot_action_server.py"
 
   test:
-    image: eldgar/tortoisebot-ros1-gazebo-test
+    image: eldgar/tortoisebot-ros1-waypoints-test
     container_name: tortoisebot-ros1-test
     depends_on:
       - gazebo

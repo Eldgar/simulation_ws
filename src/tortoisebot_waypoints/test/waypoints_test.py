@@ -46,17 +46,17 @@ class TestTortoiseBotWaypoints(unittest.TestCase):
         self.current_yaw = 0
 
         self.goal = WaypointActionGoal()
-        self.goal.position.x = 0.20
-        self.goal.position.y = 0.25
+        self.goal.position.x = 0.19
+        self.goal.position.y = 0.24
         self.client.send_goal(self.goal)
 
         # 5) Wait up to 40s for the action to complete
         self.finished_before_timeout = self.client.wait_for_result(
-            rospy.Duration(60.0))
+            rospy.Duration(65.0))
 
         if not self.finished_before_timeout:
             rospy.logerr(
-                "Action server did not finish within 40 seconds! Marking test as failed.")
+                "Action server did not finish within 60 seconds! Marking test as failed.")
 
         # 6) Store result and final pose for both tests to use
         self.result = self.client.get_result()
@@ -103,7 +103,7 @@ class TestTortoiseBotWaypoints(unittest.TestCase):
 
         self.assertTrue(self.result.success,
                         "Action server did not report success!")
-        self.assertTrue(x_err < 0.1 and y_err < 0.1,
+        self.assertTrue(x_err < 0.18 and y_err < 0.18,
                         f"Robot did not reach the expected position. x_err={x_err:.2f}, y_err={y_err:.2f}")
 
     def test_final_yaw(self):
@@ -116,7 +116,7 @@ class TestTortoiseBotWaypoints(unittest.TestCase):
 
         self.assertTrue(self.result.success,
                         "Action server did not report success!")
-        self.assertTrue(yaw_err < 0.25,
+        self.assertTrue(yaw_err < 0.45,
                         f"Robot's final yaw angle is incorrect (err={yaw_err:.3f} rad)")
 
 

@@ -11,7 +11,15 @@ pipeline {
                 '''
             }
         }
-        
+        stage('Launch Simulation with Docker Compose') {
+            steps {
+                sh '''
+                echo "Starting Docker Compose..."
+                sudo docker-compose -f /home/user/simulation_ws/src/docker-compose.yml up -d
+                sleep 75
+                '''
+            }
+        }
         stage('Check Gazebo Logs') {
             steps {
                 sh '''
@@ -20,12 +28,12 @@ pipeline {
                 '''
             }
         }
-        stage('Shutdown Containers') {
+        stage('Cleanup Containers') {
             steps {
                 sh '''
-                echo "Starting Docker Compose..."
+                echo "Starting Docker Cleanup"
                 sudo docker-compose -f /home/user/simulation_ws/src/docker-compose.yml down -d
-                sleep 75
+                sleep 5
                 '''
             }
         }

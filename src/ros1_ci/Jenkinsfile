@@ -16,7 +16,7 @@ pipeline {
                 sh '''
                 echo "Starting Docker Compose..."
                 sudo docker-compose -f /home/user/simulation_ws/src/docker-compose.yml up -d
-                sleep 75
+                sleep 65
                 '''
             }
         }
@@ -32,7 +32,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Starting Docker Cleanup"
-                sudo docker-compose -f /home/user/simulation_ws/src/docker-compose.yml down -d
+                sudo docker-compose -f /home/user/simulation_ws/src/docker-compose.yml down
                 sleep 5
                 '''
             }

@@ -11,20 +11,21 @@ pipeline {
                 '''
             }
         }
-        stage('Launch Simulation with Docker Compose') {
-            steps {
-                sh '''
-                echo "Starting Docker Compose..."
-                sudo docker-compose -f /home/user/simulation_ws/src/docker-compose.yml up -d
-                sleep 75
-                '''
-            }
-        }
+        
         stage('Check Gazebo Logs') {
             steps {
                 sh '''
                 echo "Fetching logs from  test container..."
                 sudo docker logs tortoisebot-ros1-test
+                '''
+            }
+        }
+        stage('Shutdown Containers') {
+            steps {
+                sh '''
+                echo "Starting Docker Compose..."
+                sudo docker-compose -f /home/user/simulation_ws/src/docker-compose.yml down -d
+                sleep 75
                 '''
             }
         }

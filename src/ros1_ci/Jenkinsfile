@@ -16,7 +16,7 @@ pipeline {
                 sh '''
                 echo "Starting Docker Compose..."
                 sudo docker-compose -f /home/user/simulation_ws/src/docker-compose.yml up -d
-                sleep 15
+                sleep 75
                 '''
             }
         }
